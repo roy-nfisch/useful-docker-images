@@ -1,0 +1,9 @@
+services:
+  jupyter:
+    build: .
+    image: jupyter-copilot
+    container_name: jupyter
+    ports:
+      - "10000:8888"
+    volumes:
+      - ${TARGET_DIR}:/home/jovyan/work
