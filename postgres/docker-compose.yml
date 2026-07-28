@@ -1,0 +1,24 @@
+services:
+  postgres:
+    build: .
+    container_name: ds-sql-intro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bootcamp
+      POSTGRES_PASSWORD: bootcamp
+      POSTGRES_DB: ds_sql_intro
+    ports:
+      - "10001:5432"
+    volumes:
+      - ds_sql_intro_data:/var/lib/postgresql/data
+      # Drop any .sql/.sql.gz/.sh files from your course folder in here.
+      # Postgres runs them once, alphabetically, on first container start.
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bootcamp -d ds_sql_intro"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ds_sql_intro_data:
