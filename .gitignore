@@ -11,3 +11,6 @@ __pycache__/
 
 # Local scripts
 *.sh
+
+# Macbook metadata
+.DS_Store
