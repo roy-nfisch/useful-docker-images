@@ -5,7 +5,7 @@ RUN pip install --no-cache-dir notebook-intelligence
 
 # Plotting & database libraries not included in the scipy-notebook base image
 # (base already has: pandas, matplotlib, seaborn, sqlalchemy, scikit-learn)
-RUN pip install --no-cache-dir plotly psycopg2-binary python-dotenv missingno nb-clean
+RUN pip install --no-cache-dir plotly psycopg2-binary python-dotenv missingno nb-clean uv
 
 EXPOSE 8888
 
