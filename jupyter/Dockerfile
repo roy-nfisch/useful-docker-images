@@ -11,19 +11,23 @@ RUN pip install --no-cache-dir \
     nltk \
     notebook-intelligence \
     plotly \
+    protobuf \
     psycopg2-binary \
     pydotplus \
     python-dotenv \
     scikit-learn \
+    sentencepiece \
     sentence-transformers \
     six \
     spacy \
     tensorboard \
     tensorflow \
     tensorflow_docs \
+    tiktoken \
     transformers \
     uv \
     xgboost
+
 
 EXPOSE 8888 6006
 
