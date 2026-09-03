@@ -4,8 +4,16 @@ FROM quay.io/jupyter/scipy-notebook:2026-07-20
 # Plotting & database libraries not included in the scipy-notebook base image
 # (base already has: pandas, matplotlib, seaborn, sqlalchemy, scikit-learn)
 RUN pip install --no-cache-dir \
+    duckdb \
     graphviz \
+    langchain \
+    langchain_chroma \
+    langchain_classic \
+    langchain_huggingface \
+    langchain_mcp_adapters \
     imbalanced-learn \
+    markitdown[all] \
+    markitdown \
     missingno \
     nb-clean \
     nltk \
@@ -13,6 +21,7 @@ RUN pip install --no-cache-dir \
     plotly \
     protobuf \
     psycopg2-binary \
+    pypdf \
     pydotplus \
     python-dotenv \
     scikit-learn \
