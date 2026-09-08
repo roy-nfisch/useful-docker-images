@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir \
     nb-clean \
     nltk \
     notebook-intelligence \
+    openai \
     plotly \
     protobuf \
     psycopg2-binary \
