@@ -25,6 +25,7 @@ RUN pip install --no-cache-dir \
     pypdf \
     pydotplus \
     python-dotenv \
+    rasterio \
     scikit-learn \
     sentencepiece \
     sentence-transformers \
