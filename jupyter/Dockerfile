@@ -31,6 +31,7 @@ RUN pip install --no-cache-dir \
     sentence-transformers \
     six \
     spacy \
+    surprise \
     tensorboard \
     tensorflow \
     tensorflow_docs \
