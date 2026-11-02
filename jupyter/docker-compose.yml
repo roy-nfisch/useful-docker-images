@@ -3,8 +3,10 @@ services:
     build: .
     image: jupyter-copilot
     container_name: jupyter
+    # Override old images that disabled authentication in their default command.
+    command: ["start-notebook.sh"]
     ports:
-      - "10000:8888"
+      - "127.0.0.1:10000:8888"
     volumes:
       - ${TARGET_DIR}:/home/jovyan/work
 
@@ -18,6 +20,6 @@ services:
       - --host=0.0.0.0
       - --port=6006
     ports:
-      - "6006:6006"
+      - "127.0.0.1:6006:6006"
     volumes:
       - ${TARGET_DIR}:/home/jovyan/work

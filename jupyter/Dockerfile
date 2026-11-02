@@ -43,4 +43,5 @@ RUN pip install --no-cache-dir \
 
 EXPOSE 8888 6006
 
-CMD ["start-notebook.sh", "--NotebookApp.token=''"]
+# Keep Jupyter's default generated-token authentication enabled.
+CMD ["start-notebook.sh"]

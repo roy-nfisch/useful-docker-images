@@ -1,0 +1,23 @@
+services:
+  jupyter-demo-logic:
+    build: .
+    image: jupyter-copilot
+    container_name: jupyter-demo-logic
+    command: ["start-notebook.sh"]
+    ports:
+      - "127.0.0.1:9000:8888"
+    volumes:
+      - ${DEMO_DIR}:/home/jovyan/work
+
+  tensorboard-demo-logic:
+    image: jupyter-copilot
+    container_name: tensorboard-demo-logic
+    command:
+      - tensorboard
+      - --logdir=/home/jovyan/work/runs
+      - --host=0.0.0.0
+      - --port=6006
+    ports:
+      - "127.0.0.1:6007:6006"
+    volumes:
+      - ${DEMO_DIR}:/home/jovyan/work

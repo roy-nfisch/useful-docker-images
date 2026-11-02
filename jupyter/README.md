@@ -40,20 +40,22 @@ cp .env.example .env
 Build the image if it does not exist and start the container in the background:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 
 ```
 
 ### Get the Login Token
 
-Jupyter requires a token for the first login. Retrieve it by checking the container logs:
+Jupyter and TensorBoard are published only on localhost. Jupyter requires a token for the first login. Retrieve it by checking the container logs:
 
 ```bash
 docker logs jupyter
 
 ```
 
-Look for the URL containing the token.
+Look for the URL containing the token. Keep that token private. Do not disable token authentication.
+
+After updating this configuration, use `docker compose up -d --build` to recreate the service. Do not use `docker start jupyter` on an old container, because that retains its previous settings.
 
 ### Access Jupyter
 
