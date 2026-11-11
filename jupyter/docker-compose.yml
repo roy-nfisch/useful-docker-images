@@ -2,24 +2,25 @@ services:
   jupyter:
     build: .
     image: jupyter-copilot
-    container_name: jupyter
-    # Override old images that disabled authentication in their default command.
     command: ["start-notebook.sh"]
     ports:
-      - "127.0.0.1:10000:8888"
+      - "127.0.0.1:${JUPYTER_PORT:-10000}:8888"
     volumes:
-      - ${TARGET_DIR}:/home/jovyan/work
-
+      - type: bind
+        source: ${TARGET_DIR:?Set TARGET_DIR to an existing project directory in .env}
+        target: /home/jovyan/work
+        bind:
+          create_host_path: false
   tensorboard:
+    profiles: ["tensorboard"]
     build: .
     image: jupyter-copilot
-    container_name: tensorboard
-    command:
-      - tensorboard
-      - --logdir=/home/jovyan/work
-      - --host=0.0.0.0
-      - --port=6006
+    command: ["tensorboard", "--logdir=/home/jovyan/work", "--host=0.0.0.0", "--port=6006"]
     ports:
       - "127.0.0.1:6006:6006"
     volumes:
-      - ${TARGET_DIR}:/home/jovyan/work
+      - type: bind
+        source: ${TARGET_DIR:?Set TARGET_DIR in .env}
+        target: /home/jovyan/work
+        bind:
+          create_host_path: false

@@ -1,79 +1,127 @@
-# Jupyter Copilot Environment
+# Jupyter Docker environment
 
-This project provides a containerized setup to run a Jupyter Notebook environment using Docker and Docker Compose. It maps a local directory to the container so your work is saved locally.
+Run Jupyter with a preloaded set of data science and machine learning libraries.
+Choose which local project to open; notebook changes are saved in that folder.
 
-## Prerequisites
-
-Make sure you have the following installed on your system:
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-
-## Project Structure
+## Files
 
 ```text
-.
-|-- .env               # Your local environment variables (not tracked by git)
-|-- .env.example       # Example environment variables template
-|-- .gitignore         # Git ignore rules
-|-- docker-compose.yml # Docker Compose configuration
-|-- Dockerfile         # Docker image build instructions
-|-- README.md          # Project documentation
-
+jupyter/
+├── .dockerignore         # Keep local files out of image builds
+├── .env.example          # Project path and local port
+├── .gitignore            # Keep .env out of Git
+├── Dockerfile            # Jupyter and preinstalled libraries
+├── docker-compose.yml    # Jupyter and optional TensorBoard
+└── README.md             # Setup and commands
 ```
 
-## Setup
+## 1. Choose a project
 
-1. Clone or download this repository to your local machine.
-2. Create your environment file by copying the example file:
+Install Docker and Docker Compose. In your computer's terminal, go to the
+`jupyter/` folder. If you don't already have a `.env` file, create one:
+
 ```bash
 cp .env.example .env
-
 ```
 
+Open `.env` and set an existing project folder and a free local port:
 
-3. Open the `.env` file and update `TARGET_DIR` to the absolute path of your local project folder.
+```dotenv
+TARGET_DIR=/path/to/your/project
+JUPYTER_PORT=10000
+```
 
-## Commands
+Keep `.env` private; Git ignores it. Only the chosen folder is mounted.
+The image provides shared packages, including Notebook Intelligence. It does
+**not** automatically install or enforce the project's `uv.lock` or
+`requirements.txt`; check the project's instructions if it needs other packages
+or specific versions.
 
-### Start the Container
+The image uses CPU-only PyTorch and XGBoost. On a Mac, this Linux container cannot use
+Apple's Metal GPU through PyTorch MPS. To use MPS, run a compatible PyTorch
+environment directly on macOS. See the
+[PyTorch MPS guide](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
-Build the image if it does not exist and start the container in the background:
+## 2. Start Jupyter
 
 ```bash
 docker compose up -d --build
-
 ```
 
-### Get the Login Token
+The first build downloads the image and libraries and can take a while.
 
-Jupyter and TensorBoard are published only on localhost. Jupyter requires a token for the first login. Retrieve it by checking the container logs:
+### Log in
+
+Get the current login token:
 
 ```bash
-docker logs jupyter
-
+docker compose exec jupyter jupyter server list
 ```
 
-Look for the URL containing the token. Keep that token private. Do not disable token authentication.
+Copy the value after `token=`. Open `http://localhost:10000` (or your
+configured port) and paste the token into **Password or token**. The URL
+printed inside the container uses port `8888`; use your configured host port
+in your browser instead.
 
-After updating this configuration, use `docker compose up -d --build` to recreate the service. Do not use `docker start jupyter` on an old container, because that retains its previous settings.
+Treat the token like a password. Do not commit it or share unredacted output.
+After a container restart, retrieve the current token again.
 
-### Access Jupyter
-
-Open your browser and navigate to:
-
-```text
-http://localhost:10000
-
-```
-
-### Stop the Container
-
-Stop and remove the container when you are done:
+## 3. Stop Jupyter
 
 ```bash
 docker compose down
-
 ```
+
+After changing the project path or port, rerun the start command to recreate
+the container with the new settings.
+
+## Another project
+
+To run a second container at the same time, choose another Compose project
+name and a free port:
+
+```bash
+TARGET_DIR=/path/to/another/project JUPYTER_PORT=10001 \
+  docker compose -p another-project up -d --build
+```
+
+Use the same settings and name to stop it:
+
+```bash
+TARGET_DIR=/path/to/another/project JUPYTER_PORT=10001 \
+  docker compose -p another-project down
+```
+
+Both containers use the same image, not separate project dependency environments.
+
+## Troubleshooting
+
+- **Docker is unreachable:** start Docker Desktop or your Docker engine.
+- **Port is in use:** choose another `JUPYTER_PORT` in `.env` and restart.
+- **Permission denied in the project folder:** check folder permissions and
+  Docker file-sharing settings. The container runs as user ID 1000; on Linux,
+  that user needs access to the folder. Do not make it world-writable.
+- **Missing package:** the image has common libraries but cannot include every
+  project's dependencies. Consult the project's dependency instructions.
+- **Other startup errors:** check `docker compose logs jupyter`.
+
+## Security
+
+Jupyter runs as a non-root user, listens only on localhost, and requires a
+token. Run only trusted notebooks: their code can modify the mounted project
+and access the network. Never share your token or expose Jupyter publicly
+without appropriate protection.
+
+## Optional TensorBoard
+
+To start TensorBoard alongside Jupyter using the same image:
+
+```bash
+docker compose --profile tensorboard up -d --build
+```
+
+Open `http://localhost:6006`. TensorBoard reads event files written by your
+training code into the mounted folder; it does not create them.
 
 ## License
 
