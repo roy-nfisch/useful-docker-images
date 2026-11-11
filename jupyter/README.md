@@ -1,7 +1,7 @@
-# Jupyter for a Python project
+# Jupyter Docker environment
 
-Run one project per container, with its own Python environment.
-Only the chosen project directory is mounted.
+Run Jupyter with a preloaded set of data science and machine learning libraries.
+Choose which local project to open; notebook changes are saved in that folder.
 
 ## Files
 
@@ -10,80 +10,56 @@ jupyter/
 ├── .dockerignore         # Keep local files out of image builds
 ├── .env.example          # Project path and local port
 ├── .gitignore            # Keep .env out of Git
-├── Dockerfile            # Jupyter base and optional full library set
-├── docker-compose.yml    # Container, ports, and project storage
-├── start-project.sh      # Install the project and register its kernel
-└── README.md             # Setup and everyday commands
+├── Dockerfile            # Jupyter and preinstalled libraries
+├── docker-compose.yml    # Jupyter and optional TensorBoard
+└── README.md             # Setup and commands
 ```
 
-## 1. Choose your project
+## 1. Choose a project
 
-Requires Docker Compose and a project with either:
-
-- `pyproject.toml` and `uv.lock`, including `ipykernel` in its dependencies; or
-- A `requirements.txt` file. The container also installs `ipykernel`.
-
-If both are present, the uv lock file takes priority. The image uses uv to
-install dependencies and download a compatible Python version when needed.
-
-If your uv project does not include `ipykernel`, run this from that project's
-folder using uv on your computer:
-
-```bash
-uv add --dev ipykernel
-```
-
-Run these commands in your computer's terminal, from this `jupyter/` folder.
-If you do not already have a `.env` file, create it:
+Install Docker and Docker Compose. In your computer's terminal, go to the
+`jupyter/` folder. If you don't already have a `.env` file, create one:
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` in your editor and set your project's absolute path and a free port:
+Open `.env` and set an existing project folder and a free local port:
 
 ```dotenv
 TARGET_DIR=/path/to/your/project
 JUPYTER_PORT=10000
 ```
 
-Keep `.env` private; Git ignores it. The project path must already exist.
+Keep `.env` private; Git ignores it. Only the chosen folder is mounted.
+The image provides shared packages, including Notebook Intelligence. It does
+**not** automatically install or enforce the project's `uv.lock` or
+`requirements.txt`; check the project's instructions if it needs other packages
+or specific versions.
 
-## 2. Open Jupyter
+## 2. Start Jupyter
 
 ```bash
 docker compose up -d --build
 ```
 
-The first startup installs dependencies from the selected file. For uv projects,
-it also installs the project package if one is defined. A requirements file is
-only as reproducible as the versions it specifies.
+The first build downloads the image and libraries and can take a while.
 
-### Log in with the token
+### Log in
 
-Once Jupyter has started, get its current login token:
+Get the current login token:
 
 ```bash
 docker compose exec jupyter jupyter server list
 ```
 
-Look for a URL containing `?token=...`. Copy only the value after `token=`,
-then open `http://localhost:10000` (or your chosen port). Paste it into the
-**Password or token** field and log in. The URLs in the logs show the container's
-port `8888`; use your configured host port in the browser instead.
+Copy the value after `token=`. Open `http://localhost:10000` (or your
+configured port) and paste the token into **Password or token**. The URL
+printed inside the container uses port `8888`; use your configured host port
+in your browser instead.
 
-Treat the token like a password: do not commit it or share the command's output.
-If the container restarts, run the command again for the current token.
-
-In a notebook, select **Python (Project)**. If you open a Jupyter terminal,
-use the project's Python explicitly:
-
-```bash
-/home/jovyan/project-env/bin/python --version
-```
-
-Plain `python` in the terminal refers to the base image, not necessarily your
-project's environment.
+Treat the token like a password. Do not commit it or share unredacted output.
+After a container restart, retrieve the current token again.
 
 ## 3. Stop Jupyter
 
@@ -91,58 +67,56 @@ project's environment.
 docker compose down
 ```
 
-This stops and removes the container, keeping its dependency volumes.
-After changing the path or port in `.env`, rerun the start command.
+After changing the project path or port, rerun the start command to recreate
+the container with the new settings.
 
 ## Another project
 
-Use a separate Compose project name and a different port to keep containers
-and volumes separate:
+To run a second container at the same time, choose another Compose project
+name and a free port:
 
 ```bash
 TARGET_DIR=/path/to/another/project JUPYTER_PORT=10001 \
   docker compose -p another-project up -d --build
 ```
 
-To stop that container, use the same settings and name:
+Use the same settings and name to stop it:
 
 ```bash
 TARGET_DIR=/path/to/another/project JUPYTER_PORT=10001 \
   docker compose -p another-project down
 ```
 
-## If it does not start
+Both containers use the same image, not separate project dependency environments.
 
-Check `docker compose logs jupyter`. Jupyter starts only after dependency
-installation and kernel setup succeed.
+## Troubleshooting
 
-- **Cannot connect to Docker:** start Docker Desktop or your Docker engine.
-- **Port already in use:** choose a free `JUPYTER_PORT` in `.env`, then rerun
-  `docker compose up -d --build`.
-- **Permission denied in the project folder:** check your folder permissions
-  and Docker's file-sharing settings. The container runs as user ID 1000; on
-  Linux, that user needs access to the mounted folder. Do not make the folder
-  world-writable to bypass the error.
+- **Docker is unreachable:** start Docker Desktop or your Docker engine.
+- **Port is in use:** choose another `JUPYTER_PORT` in `.env` and restart.
+- **Permission denied in the project folder:** check folder permissions and
+  Docker file-sharing settings. The container runs as user ID 1000; on Linux,
+  that user needs access to the folder. Do not make it world-writable.
+- **Missing package:** the image has common libraries but cannot include every
+  project's dependencies. Consult the project's dependency instructions.
+- **Other startup errors:** check `docker compose logs jupyter`.
 
 ## Security
 
-Jupyter runs as a non-root user, binds only to localhost, and requires a token.
-Run only trusted notebooks: their code can modify the mounted project and
-access the network. Do not publish the port beyond localhost or share tokens.
-Local files are excluded from the image build context.
+Jupyter runs as a non-root user, listens only on localhost, and requires a
+token. Run only trusted notebooks: their code can modify the mounted project
+and access the network. Never share your token or expose Jupyter publicly
+without appropriate protection.
 
 ## Optional TensorBoard
 
-The existing full-library Dockerfile target remains available. TensorBoard
-is opt-in and uses that target:
+To start TensorBoard alongside Jupyter using the same image:
 
 ```bash
 docker compose --profile tensorboard up -d --build
 ```
 
-It is available at `http://localhost:6006` and reads event files from the mounted
-project folder. Your training code must write those logs; TensorBoard does not
-create them.
+Open `http://localhost:6006`. TensorBoard reads event files written by your
+training code into the mounted folder; it does not create them.
 
 ## License
 

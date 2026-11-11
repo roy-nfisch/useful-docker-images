@@ -1,9 +1,8 @@
 services:
   jupyter:
-    build:
-      context: .
-      target: project
-    command: ["sh", "/opt/start-project.sh"]
+    build: .
+    image: jupyter-copilot
+    command: ["start-notebook.sh"]
     ports:
       - "127.0.0.1:${JUPYTER_PORT:-10000}:8888"
     volumes:
@@ -12,20 +11,10 @@ services:
         target: /home/jovyan/work
         bind:
           create_host_path: false
-      - type: bind
-        source: ./start-project.sh
-        target: /opt/start-project.sh
-        read_only: true
-        bind:
-          create_host_path: false
-      - project-env:/home/jovyan/project-env
-      - python-runtime:/home/jovyan/.local/share/uv
-
   tensorboard:
     profiles: ["tensorboard"]
-    build:
-      context: .
-      target: full
+    build: .
+    image: jupyter-copilot
     command: ["tensorboard", "--logdir=/home/jovyan/work", "--host=0.0.0.0", "--port=6006"]
     ports:
       - "127.0.0.1:6006:6006"
@@ -35,7 +24,3 @@ services:
         target: /home/jovyan/work
         bind:
           create_host_path: false
-
-volumes:
-  project-env:
-  python-runtime:

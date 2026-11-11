@@ -1,17 +1,12 @@
-FROM quay.io/jupyter/scipy-notebook:2026-07-20 AS project
-
-# Shared non-root Jupyter base for project-specific locked environments.
-RUN pip install --no-cache-dir 'uv>=0.13.5' && \
-    mkdir -p /home/jovyan/project-env \
-    /home/jovyan/.local/share/uv
-
-FROM project AS full
+FROM quay.io/jupyter/scipy-notebook:2026-07-20
 
 # Install GitHub Copilot support for Jupyter (notebook-intelligence)
 # Plotting & database libraries not included in the scipy-notebook base image
 # (base already has: pandas, matplotlib, seaborn, sqlalchemy, scikit-learn)
 RUN pip install --no-cache-dir \
     duckdb \
+    datasets \
+    great-expectations \
     graphviz \
     langchain \
     langchain_chroma \
@@ -26,6 +21,7 @@ RUN pip install --no-cache-dir \
     nltk \
     notebook-intelligence \
     openai \
+    optuna \
     plotly \
     protobuf \
     psycopg2-binary \
@@ -37,6 +33,7 @@ RUN pip install --no-cache-dir \
     sentencepiece \
     sentence-transformers \
     six \
+    skops \
     spacy \
     surprise \
     tensorboard \
@@ -45,6 +42,7 @@ RUN pip install --no-cache-dir \
     tiktoken \
     transformers \
     uv \
+    wordcloud \
     xgboost
 
 
