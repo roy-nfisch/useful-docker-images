@@ -37,6 +37,11 @@ The image provides shared packages, including Notebook Intelligence. It does
 `requirements.txt`; check the project's instructions if it needs other packages
 or specific versions.
 
+The image uses CPU-only PyTorch and XGBoost. On a Mac, this Linux container cannot use
+Apple's Metal GPU through PyTorch MPS. To use MPS, run a compatible PyTorch
+environment directly on macOS. See the
+[PyTorch MPS guide](https://docs.pytorch.org/docs/stable/notes/mps.html).
+
 ## 2. Start Jupyter
 
 ```bash
