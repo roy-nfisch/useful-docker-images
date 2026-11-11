@@ -11,3 +11,4 @@ __pycache__/
 
 # Local scripts
 *.sh
+!start-project.sh

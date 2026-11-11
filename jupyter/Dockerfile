@@ -1,4 +1,11 @@
-FROM quay.io/jupyter/scipy-notebook:2026-07-20
+FROM quay.io/jupyter/scipy-notebook:2026-07-20 AS project
+
+# Shared non-root Jupyter base for project-specific locked environments.
+RUN pip install --no-cache-dir 'uv>=0.13.5' && \
+    mkdir -p /home/jovyan/project-env \
+    /home/jovyan/.local/share/uv
+
+FROM project AS full
 
 # Install GitHub Copilot support for Jupyter (notebook-intelligence)
 # Plotting & database libraries not included in the scipy-notebook base image
